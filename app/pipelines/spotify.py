@@ -128,16 +128,20 @@ def get_top_songs():
     r = requests.get("https://spotifycharts.com")
 
     res = []
+
+    # scrape through valid track links
     for link in BeautifulSoup(r.text, features="html.parser").find_all(href=True):
         if link["href"][25:30] == "track":
             res.append(link["href"][31:])
 
     return res
 
-def generate_vector(track_id):
+
+def generate_vector(track_id): # this can definitely be combined with generate_genre_vectors
     sao = SpotifyAccessObject()
     uri = SpotifyTrack.build_track_uri(id)
 
+    # create feature vector
     song = SpotifyTrack(uri, sao)
     vector = [
         float(song.volume),
@@ -146,16 +150,26 @@ def generate_vector(track_id):
         float(song.instrumentalness)
     ]
 
+    # turn into np readable object
     return np.array(vector)
+
+def normalize_vector(vector, vmin, vmax, dmin, dmax, bmin, bmax, imin, imax):
+    vector[0] = (vector[0] - vmin)/(vmax - vmin)
+    vector[1] = (vector[1] - dmin)/(dmax - dmin)
+    vector[2] = (vector[2] - bmin)/(bmax - bmin)
+    vector[3] = (vector[3] - imin)/(imax - imin)
 
 
 def generate_genre_vectors(track_ids):
     sao = SpotifyAccessObject()
 
     vectors = []
-    for id in track_ids:
-        uri = SpotifyTrack.build_track_uri(id)
+    for _id in track_ids:
+        # create object to interact with spotify track
+        uri = SpotifyTrack.build_track_uri(_id)
         song = SpotifyTrack(uri, sao)
+
+        # create feature vector
         vectors.append(np.array([
             float(song.volume),
             float(song.danceability),
@@ -163,6 +177,8 @@ def generate_genre_vectors(track_ids):
             float(song.instrumentalness)
         ]))
 
+    # turn into np readable object
+    vectors = np.array(vectors)
     return vectors
 
 
@@ -196,9 +212,42 @@ if __name__ == "__main__":
 
     id = "2aHlRZIGUFThu3eQePm6yI" # Champion - Kanye West
 
+    # get top songs and calculate feature vectors
     top_song_ids = get_top_songs()
     genre_vectors = generate_genre_vectors(top_song_ids)
-    song = generate_vector(id)
-    similarity = genre_similarity(song, genre_vectors)
 
+    # determine normalization constants
+    volume_min, dance_min, bpm_min, instrumentalness_min = np.min(genre_vectors, axis=0)
+    volue_max, dance_max, bpm_max, instrumentalness_max = np.max(genre_vectors, axis=0)
+    
+    # normalize
+    for vector in genre_vectors:
+        normalize_vector(
+            vector,
+            volume_min,
+            volue_max,
+            dance_min, 
+            dance_max,
+            bpm_min,
+            bpm_max,
+            instrumentalness_min,
+            instrumentalness_max
+        )
+    
+    # calculate feature vector for given song from 'id'
+    song = generate_vector(id)
+    normalize_vector(
+            song,
+            volume_min,
+            volue_max,
+            dance_min, 
+            dance_max,
+            bpm_min,
+            bpm_max,
+            instrumentalness_min,
+            instrumentalness_max
+        )
+
+    # calculate similarity
+    similarity = genre_similarity(song, genre_vectors)
     print(similarity)
