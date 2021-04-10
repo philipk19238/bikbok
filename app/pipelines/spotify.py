@@ -1,8 +1,10 @@
 import os
 import spotipy
+from fycharts.SpotifyCharts import SpotifyCharts
 from spotipy.oauth2 import SpotifyClientCredentials
 from functools import cached_property
 
+charts_api = SpotifyCharts()
 
 class SpotifyAccessObject:
 
@@ -16,9 +18,8 @@ class SpotifyAccessObject:
 
     @classmethod
     def top_songs(cls, term):
-        sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials())
-        res = sp.search(q=term, limit=10, type="track")
-        print(res)
+        print(charts_api.top200Daily())
+        
 
 
 class SpotifyTrack:
@@ -118,4 +119,4 @@ if __name__ == "__main__":
     sao = SpotifyAccessObject()
     champion = SpotifyTrack(id, sao)
     
-    SpotifyAccessObject.search("rap")
+    SpotifyAccessObject.top_songs()
