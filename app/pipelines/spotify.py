@@ -1,7 +1,17 @@
 import os
 import spotipy
+import requests
+
+from bs4 import BeautifulSoup, SoupStrainer
 from spotipy.oauth2 import SpotifyClientCredentials
 from functools import cached_property
+
+def get_top_songs():
+    r = requests.get("https://spotifycharts.com")
+
+    for link in BeautifulSoup(r.text, parse_only=SoupStrainer("a")):
+        print(link)
+
 
 
 class SpotifyAccessObject:
@@ -21,6 +31,7 @@ class SpotifyTrack:
         self._sao = spotify_access_object.client
         self._id = track_uri
         self._features = {}
+        self._track_info = None
 
         self._get_features()
 
@@ -85,20 +96,38 @@ class SpotifyTrack:
 
     @cached_property
     def image_uri(self):
-        t = self._sao.track(self._id)
-        uri = t["album"]["images"][1]["url"]
+        if not self._track_info:
+            self._track_info = self._sao.track(self._id)
+
+        uri = self._track_info["album"]["images"][1]["url"]
         return uri
 
     @cached_property
     def genres(self):
-        t = self._sao.track(self._id)
-        artist_uri = t["album"]["artists"][0]["uri"]
-        
+        if not self._track_info:
+            self._track_info = self._sao.track(self._id)
+
+        artist_uri = self._track_info["album"]["artists"][0]["uri"]
         artist = self._sao.artist(artist_uri)
         genres = artist["genres"]
 
         return genres
 
+    @cached_property
+    def name(self):
+        if not self._track_info:
+            self._track_info = self._sao.track(self._id)
+
+        name = self._track_info["name"]
+        return name
+
+    @cached_property
+    def artist(self):
+        if not self._track_info:
+            self._track_info = self._sao.track(self._id)
+
+        artist_name = self._track_info["album"]["artists"][0]["name"]
+        return artist_name
 
 
 class SpotifyGenre:
@@ -115,5 +144,5 @@ if __name__ == "__main__":
 
     sao = SpotifyAccessObject()
     champion = SpotifyTrack(uri, sao)
-    
-    get_top_songs()
+
+    get_top_songs() 
