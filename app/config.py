@@ -7,5 +7,7 @@ class Config:
     SPOTIPY_CLIENT_ID = os.getenv("SPOTIPY_CLIENT_ID")
     SPOTIPY_CLIENT_SECRET = os.getenv("SPOTIPY_CLIENT_SECRET")
     SPOTIPY_REDIRECT_URI = os.getenv("SPOTIPY_REDIRECT_URI")
+    FLASK_APP = 'app'
+    FLASK_ENV = 'development'
 
 config = Config()

@@ -1,0 +1,30 @@
+{% extends "layout.html" %}
+{% block title %}Home{% endblock %}
+{% block navbar %}
+{% include "navbar.html" %}
+{% endblock %}
+<section id="hero" class="hero d-flex align-items-center">
+
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-7 d-flex flex-column justify-content-center">
+                <h1 data-aos="fade-up" class="blue"><span class="pink">eat</span> together.</h1>
+                <h2 data-aos="fade-up" data-aos-delay="400"><b class="pink">sweetspot</b> is a takeout only platform
+                    that is reimagining the way you order food.</h2>
+                <div data-aos="fade-up" data-aos-delay="600">
+                    <div class="text-center text-lg-left">
+                        <a href="#join"
+                            class="btn-waitlist scrollto d-inline-flex align-items-center justify-content-center align-self-center">
+                            <span>Join the Waitlist</span>
+                            <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-5 hero-img" data-aos="zoom-out" data-aos-delay="200">
+                <img class="img-fluid" src="{{ url_for('static', filename='media/wallet.png') }}">
+            </div>
+        </div>
+    </div>
+
+</section>
