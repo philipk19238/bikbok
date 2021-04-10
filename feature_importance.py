@@ -9,7 +9,7 @@ np.set_printoptions(precision=3, suppress=True)
 raw_data = pd.read_csv('data/OfficialCompetitionDataset.csv')
 
 #Extract features to use
-raw_features = raw_data[["beats_per_measure", "beats_per_min", "instrumentalness", "length_minutes", "major/minor", "tone", "volume", "vulgar"]]
+raw_features = raw_data[["beats_per_measure", "beats_per_min", "instrumentalness", "danceability", "length_minutes", "major/minor", "tone", "volume", "vulgar"]]
 
 #Extract and reshape target variable
 target = raw_data[["nplays"]]
@@ -20,7 +20,7 @@ categorical_features = raw_features[["major/minor", "tone", "vulgar"]]
 encoded_features = pd.get_dummies(categorical_features, drop_first=True)
 
 #Extract numerical features
-numerical_features = raw_features[["beats_per_measure", "beats_per_min", "instrumentalness", "volume"]]
+numerical_features = raw_features[["beats_per_measure", "beats_per_min", "danceability", "instrumentalness", "volume"]]
 
 #Combine numerical features and categorical features into training data
 X = pd.concat([numerical_features, encoded_features], axis=1)
