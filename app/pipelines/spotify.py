@@ -1,10 +1,8 @@
 import os
 import spotipy
-from fycharts.SpotifyCharts import SpotifyCharts
 from spotipy.oauth2 import SpotifyClientCredentials
 from functools import cached_property
 
-charts_api = SpotifyCharts()
 
 class SpotifyAccessObject:
 
@@ -16,17 +14,12 @@ class SpotifyAccessObject:
     def client(self):
         return self._sp
 
-    @classmethod
-    def top_songs(cls, term):
-        print(charts_api.top200Daily())
-        
-
 
 class SpotifyTrack:
 
-    def __init__(self, track_id: str, spotify_access_object: SpotifyAccessObject):
+    def __init__(self, track_uri: str, spotify_access_object: SpotifyAccessObject):
         self._sao = spotify_access_object.client
-        self._id = track_id
+        self._id = track_uri
         self._features = {}
 
         self._get_features()
@@ -36,8 +29,11 @@ class SpotifyTrack:
         return f"spotify:track:{track_id}"
 
     def _get_features(self):
-        features = self._sao.audio_features(self._id)
-        self._features.update(features[0])
+        try:
+            features = self._sao.audio_features(self._id)
+            self._features.update(features[0])
+        except:
+            pass
 
     @property
     def danceability(self):
@@ -114,9 +110,10 @@ if __name__ == "__main__":
 
     load_dotenv()
 
-    id = "spotify:track:2aHlRZIGUFThu3eQePm6yI" # Champion - Kanye West
+    id = "2aHlRZIGUFThu3eQePm6yI" # Champion - Kanye West
+    uri = SpotifyTrack.build_track_uri(id)
 
     sao = SpotifyAccessObject()
-    champion = SpotifyTrack(id, sao)
+    champion = SpotifyTrack(uri, sao)
     
-    SpotifyAccessObject.top_songs()
+    get_top_songs()
