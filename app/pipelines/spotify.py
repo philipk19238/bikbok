@@ -1,17 +1,11 @@
 import os
 import spotipy
 import requests
+import numpy as np
 
 from bs4 import BeautifulSoup, SoupStrainer
 from spotipy.oauth2 import SpotifyClientCredentials
 from functools import cached_property
-
-def get_top_songs():
-    r = requests.get("https://spotifycharts.com")
-
-    for link in BeautifulSoup(r.text, parse_only=SoupStrainer("a")):
-        print(link)
-
 
 
 class SpotifyAccessObject:
@@ -130,8 +124,32 @@ class SpotifyTrack:
         return artist_name
 
 
-class SpotifyGenre:
-    pass
+def get_top_songs():
+    r = requests.get("https://spotifycharts.com")
+
+    res = []
+    for link in BeautifulSoup(r.text, features="html.parser").find_all(href=True):
+        if link["href"][25:30] == "track":
+            res.append(link["href"][31:])
+
+    return res
+
+
+def generate_genre_vectors(track_ids):
+    sao = SpotifyAccessObject()
+
+    vectors = []
+    for id in track_ids:
+        uri = SpotifyTrack.build_track_uri(id)
+        song = SpotifyTrack(id, sao)
+        vectors.append([
+            song.volume,
+            song.danceability,
+            song.bpm,
+            song.instrumentalness
+        ])
+
+    return vectors
 
 
 if __name__ == "__main__":
@@ -144,5 +162,3 @@ if __name__ == "__main__":
 
     sao = SpotifyAccessObject()
     champion = SpotifyTrack(uri, sao)
-
-    get_top_songs() 
