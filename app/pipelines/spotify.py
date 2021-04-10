@@ -140,10 +140,10 @@ def generate_vector(track_id):
 
     song = SpotifyTrack(uri, sao)
     vector = [
-        song.volume,
-        song.danceability,
-        song.bpm,
-        song.instrumentalness
+        float(song.volume),
+        float(song.danceability),
+        float(song.bpm),
+        float(song.instrumentalness)
     ]
 
     return np.array(vector)
@@ -157,22 +157,48 @@ def generate_genre_vectors(track_ids):
         uri = SpotifyTrack.build_track_uri(id)
         song = SpotifyTrack(uri, sao)
         vectors.append(np.array([
-            song.volume,
-            song.danceability,
-            song.bpm,
-            song.instrumentalness
+            float(song.volume),
+            float(song.danceability),
+            float(song.bpm),
+            float(song.instrumentalness)
         ]))
 
-    return np.array(vectors)
+    return vectors
+
+
+def cosine_similarity(a, b):
+    """ Computes cosine similarity between two vectors a and b"""
+    if a.ndim != 1 or b.ndim != 1:
+        raise InvalidShapeException(a,b)
+
+    if len(a) != len(b):
+        raise InvalidLengthException(a,b)
+    
+    mag_a = np.linalg.norm(a)
+    mag_b = np.linalg.norm(b)
+
+    return np.dot(a,b)/(mag_a*mag_b)
+
+def genre_average(genre_vectors):
+    """Computes the vector average of genre vectors"""
+    array = [vector for vector in genre_vectors]
+    return np.average(array, axis=0)
+
+def genre_similarity(song, genre_vectors):
+    avg = genre_average(genre_vectors)
+    similarity = cosine_similarity(song, avg)
+    return similarity*100
 
 
 if __name__ == "__main__":
     from dotenv import load_dotenv
-
     load_dotenv()
 
     id = "2aHlRZIGUFThu3eQePm6yI" # Champion - Kanye West
-    uri = SpotifyTrack.build_track_uri(id)
 
-    sao = SpotifyAccessObject()
-    champion = SpotifyTrack(uri, sao)
+    top_song_ids = get_top_songs()
+    genre_vectors = generate_genre_vectors(top_song_ids)
+    song = generate_vector(id)
+    similarity = genre_similarity(song, genre_vectors)
+
+    print(similarity)
