@@ -134,6 +134,20 @@ def get_top_songs():
 
     return res
 
+def generate_vector(track_id):
+    sao = SpotifyAccessObject()
+    uri = SpotifyTrack.build_track_uri(id)
+
+    song = SpotifyTrack(uri, sao)
+    vector = [
+        song.volume,
+        song.danceability,
+        song.bpm,
+        song.instrumentalness
+    ]
+
+    return np.array(vector)
+
 
 def generate_genre_vectors(track_ids):
     sao = SpotifyAccessObject()
@@ -141,15 +155,15 @@ def generate_genre_vectors(track_ids):
     vectors = []
     for id in track_ids:
         uri = SpotifyTrack.build_track_uri(id)
-        song = SpotifyTrack(id, sao)
-        vectors.append([
+        song = SpotifyTrack(uri, sao)
+        vectors.append(np.array([
             song.volume,
             song.danceability,
             song.bpm,
             song.instrumentalness
-        ])
+        ]))
 
-    return vectors
+    return np.array(vectors)
 
 
 if __name__ == "__main__":
