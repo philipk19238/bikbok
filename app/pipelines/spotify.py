@@ -1,6 +1,7 @@
 import os
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
+from functools import cached_property
 
 
 class SpotifyAccessObject:
@@ -13,6 +14,12 @@ class SpotifyAccessObject:
     def client(self):
         return self._sp
 
+    @classmethod
+    def top_songs(cls, term):
+        sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials())
+        res = sp.search(q=term, limit=10, type="track")
+        print(res)
+
 
 class SpotifyTrack:
 
@@ -22,6 +29,10 @@ class SpotifyTrack:
         self._features = {}
 
         self._get_features()
+
+    @classmethod
+    def build_track_uri(cls, track_id):
+        return f"spotify:track:{track_id}"
 
     def _get_features(self):
         features = self._sao.audio_features(self._id)
@@ -75,7 +86,26 @@ class SpotifyTrack:
     def time_signature(self):
         return self._features.get("time_signature")
 
+    @cached_property
+    def image_uri(self):
+        t = self._sao.track(self._id)
+        uri = t["album"]["images"][1]["url"]
+        return uri
 
+    @cached_property
+    def genres(self):
+        t = self._sao.track(self._id)
+        artist_uri = t["album"]["artists"][0]["uri"]
+        
+        artist = self._sao.artist(artist_uri)
+        genres = artist["genres"]
+
+        return genres
+
+
+
+class SpotifyGenre:
+    pass
 
 
 if __name__ == "__main__":
@@ -86,4 +116,6 @@ if __name__ == "__main__":
     id = "spotify:track:2aHlRZIGUFThu3eQePm6yI" # Champion - Kanye West
 
     sao = SpotifyAccessObject()
-    st = SpotifyTrack(id, sao)
+    champion = SpotifyTrack(id, sao)
+    
+    SpotifyAccessObject.search("rap")
